@@ -14,9 +14,14 @@
     (declare (ignore char))
     (multiple-value-bind (parameter sub-char)
         (parse-parameter-and-sub-char stream)
-      (funcall (eclector.readtable:get-dispatch-macro-character
-                readtable disp-char sub-char)
-               stream sub-char parameter))))
+      (let ((dispatch-function
+             (eclector.readtable:get-dispatch-macro-character
+              readtable disp-char sub-char)))
+        (when (null dispatch-function)
+          (error 'no-dispatch-function-for-char
+                 :disp-char disp-char
+                 :sub-char sub-char))
+        (funcall dispatch-function stream sub-char parameter)))))
 
 (defmethod eclector.readtable:make-dispatch-macro-character
     ((readtable readtable) char &optional non-terminating-p)
